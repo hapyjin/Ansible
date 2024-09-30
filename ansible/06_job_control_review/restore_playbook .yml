@@ -1,0 +1,79 @@
+---
+- name: 0) 잡 제어
+  hosts: webservers
+  gather_facts: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+   ##############################################################
+    # 1) 정보 수집 & 필수 사양 점검 xxxxx
+    # 2) 패키지 [ 삭제 ] - httpd, mod_ssl, firewalld
+    # 3) 서비스 기동 [ 해제 ] - httpd, firewalld 
+    # 4) 웹 서버 HTTPS 설정 - notify ~ handlers 
+    # 5) 방화벽 포트 [ 닫기 ]
+  # 6) handlers 
+   ##############################################################
+
+
+    # 2) 패키지 삭제 - httpd, mod_ssl, firewalld
+    - name: 2) 패키지 삭제
+      ansible.builtin.dnf:
+        name: "{{ packages }}"
+        state: absent
+
+
+
+    # 3) 서비스 기동 [ 해제 ]  - httpd, firewalld 
+    - name: 3) 서비스 기동 [ 해제 ] 
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false 
+      loop: "{{ services }}"
+
+
+    # 5) 방화벽 포트 닫기 - http, HTTPS
+    - name: 5) 방화벽 포트 등록 해제
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: disabled
+      loop:
+        - http
+        - https
+
+
+    # 4) 웹 서버 HTTPS 설정 - notify ~ handlers 
+    # * /etc/pki/tls/certs/localhost.crt
+    # * /etc/pki/tls/private/localhost.key
+    # * /var/www/html/index.html
+    - name: 4) 웹 서버 HTTPS 설정
+      block:
+      - name: 4-1) 설정 파일 삭제 
+        ansible.builtin.file: 
+          path: "{{ item }}"
+          state: absent
+        loop: 
+          - /etc/pki/tls/certs/localhost.crt
+          - /etc/pki/tls/private/localhost.key
+          - /var/www/html/index.html
+       # notify: restart_web
+
+      rescue:
+        - name: 4-2) 설정 파일 삭제 에러메시지 출력
+          ansible.builtin.debug:
+            msg: "하나 이상의 설정 파일 삭제에 문제가 발생함."
+
+
+    
+  # 6) handlers 
+  handlers:
+    - name: restart web
+      ansible.builtin.service:
+        name: "{{ web_service }}"
+        state: restarted 
+
+

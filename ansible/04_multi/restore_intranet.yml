@@ -1,0 +1,36 @@
+---
+- name: Restore playbook.yml 
+  hosts : all
+  gather_facts: true
+
+  tasks:
+  ##############################
+  # 1) 방화벽 포트 제거
+  # 2) 웹 설정 파일 삭제
+  # 3) 웹 패키지 삭제
+  ##############################
+
+  # 1) 방화벽 포트 제거
+  - name: 방화벽 포트 제거
+    ansible.builtin.include_tasks: tasks/removefwrule.yml
+    vars:
+      ports:
+        - http
+        - https
+
+
+   # 2) 웹 설정 파일 삭제
+  - name: 웹 설정 파일 삭제
+    ansible.builtin.include_tasks: tasks/removefile.yml
+    vars:
+      files:
+        - '/var/wwww/html/index.html'
+
+  # 3) 웹 패키지 삭제
+  - name: 웹 패키지 삭제
+    ansible.builtin.include_tasks: tasks/removepkg.yml
+    vars:
+      pkgs:
+        - httpd
+        - mod_ssl
+

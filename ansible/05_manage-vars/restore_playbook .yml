@@ -1,0 +1,46 @@
+---
+- name: Restore the playbook.yml
+  hosts: all
+  gather_facts: true
+  vars:
+    - pkg_fw: firewalld
+    - svc_fw: firewalld
+    - svcs_fw:
+        - http
+        - https
+    - svcs_web:
+        - httpd
+        - mariadb
+    - pkg_web:
+        - httpd
+        - maraidb-server
+
+  tasks:
+    # 1) 방화벽 포트 제거 - http, https
+    - name: Close the web port
+      ansible.posix.firewalld:
+        service: "{{ svcs_fw }}"
+        permanent: true
+        immediate: true
+        state: disabled
+
+    # 2) 서비스 내리기 - httpd, mariadb
+    - name : Stopped the web service 
+      ansible.builtin.service : 
+        name : "{{ svcs_web }}"
+        state : stopped
+        enabled : false 
+    
+    # 3) 설정 삭제 - /var/www/html/index.html
+    - name : Remove the index.html 
+      ansible.builtin.file:
+        path : /var/www/html/index.html
+        state : absent 
+
+    
+    # 4) 패키지 삭제 -  httpd, mariadb-server
+    - name : Remove the web packages
+      ansible.builtin.dnf:
+        name : "{{ svcs_web }}"
+        state : absent 
+   

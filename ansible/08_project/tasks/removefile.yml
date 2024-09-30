@@ -1,0 +1,7 @@
+- name: 파일 삭제 (웹 서버 index.html 파일 생성)
+  ansible.builtin.file:
+    #content: "{{ ansible_fqdn }} : {{ ansible_all_ipv4_addresses }}"
+    #dest: "{{ indexfile }}"
+    path: /var/www/html/index.html
+    state: absent
+    

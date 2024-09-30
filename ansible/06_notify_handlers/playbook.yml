@@ -1,0 +1,62 @@
+---
+- name: MariaDB server is installed and configured
+  hosts: databases
+  gather_facts: False
+  vars:
+    db_packages:
+      - mariadb-server
+      - python3-PyMySQL
+    db_service: mariadb
+    resources_url: http://ansible.example.com
+    config_file_url: "{{ resources_url }}/my.cnf.standard"
+    config_file_dst: /etc/my.cnf
+    root_db_password: soldesk1.  # root 비밀번호
+  tasks:
+    - name: "{{ db_packages }} packages are installed"
+      yum:
+        name: "{{ db_packages }}"
+        state: present
+      notify:
+        - restart db service
+
+    - name: Make sure the database service is running
+      service:
+        name: "{{ db_service }}"
+        state: started
+        enabled: true
+
+    - name: The {{ config_file_dst }} file has been installed
+      get_url:
+        url: "{{ config_file_url }}"
+        dest: "{{ config_file_dst }}"
+        owner: mysql
+        group: mysql
+        force: yes
+      notify:
+        - restart db service
+
+    - name: Configure MariaDB to allow password authentication for root user
+      mysql_user:
+        name: root
+        host: localhost
+        password: "{{ root_db_password }}"
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Set root user to use password authentication
+      mysql_db:
+        name: information_schema  # 임의의 데이터베이스 선택 (변경 사항을 반영하기 위해)
+        state: import
+        login_user: root
+        login_password: "{{ root_db_password }}"
+        login_host: localhost
+        sql: |
+          ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ root_db_password }}';
+          FLUSH PRIVILEGES;
+
+  handlers:
+    - name: restart db service
+      service:
+        name: "{{ db_service }}"
+        state: restarted

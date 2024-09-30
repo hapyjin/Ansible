@@ -1,0 +1,11 @@
+---
+- name: 존재하는 파일에 한 줄 추가하기
+  hosts: all
+  gather_facts: false
+  tasks: 
+    - name: 1) 한 줄 추가하기 - /home/devops/users.txt  
+      ansible.builtin.lineinfile:
+        path: /home/devops/users.txt
+        line: 2nd line
+        state: present
+  

@@ -1,0 +1,6 @@
+---
+- name: Restore playbook.yml
+  hosts: all
+  gather_facts: false
+  tasks:
+    

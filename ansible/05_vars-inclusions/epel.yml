@@ -1,0 +1,10 @@
+---
+- name: epel-release 패키지 설치 (ansible 의 모든 서버)
+  hosts: all
+
+  tasks:
+  - name: 1) 패키지 설치 
+    ansible.builtin.yum:
+      name: epel-release
+      state: present
+      

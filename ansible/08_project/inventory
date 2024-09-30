@@ -1,0 +1,4 @@
+web1.example.com
+
+[webservers]
+ansible1.example.com

@@ -1,0 +1,17 @@
+---
+- name: 웹 페이지 확인
+  hosts: "{{ myhost }}"
+  become: false
+  gather_facts: false
+
+  tasks:
+    - name: 웹 서버의 index 페이지 확인
+      ansible.builtin.uri:
+        url: "{{ myurl }}"
+        status_code: 200
+      register: result
+  
+    - name: 출력 페이지 확인
+      ansible.builtin.debug:
+        var: result.output
+

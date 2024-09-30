@@ -1,0 +1,21 @@
+---
+- name: 타임존 설정
+  hosts: recover_datacenters
+
+  vars:
+    host_timezone: "Asia/Seoul"
+
+  roles:
+    - rhel-system-roles.timesync
+
+  post_tasks:
+    - name: 타임존 설정
+      community.general.timezone:
+        name: "{{ host_timezone }}"
+      notify: restart chronyd
+
+  handlers:
+    - name: restart chronyd
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted

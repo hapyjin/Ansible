@@ -1,0 +1,7 @@
+---
+- name:  서비스 기동 해제
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: "{{ services }}"

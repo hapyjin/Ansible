@@ -1,0 +1,33 @@
+---
+- name : 웹 서버 및 DB 서버 설정 복원
+  hosts: all
+  tasks:
+  # 1) 방화벽 서비스 OFF - http, https, mysql => firewalld
+  - name : (1) 방화벽 서비스 
+    ansible.posix.firewalld:
+      service : "{{ item }}"
+      permanent: yes
+      immediate : yes
+      state: disabled
+    
+    loop:
+      - http
+      - https
+      - mysql 
+ 
+   # 2) 서비스 disable - httpd, mariadb => service
+  - name : (2) 서비스 disabled
+    ansible.builtin.service:
+      name: "{{ item  }}"
+      enabled: no
+      state: stopped
+
+    loop:
+      - httpd
+      - mariadb
+
+  - name : 서비스 디렉토리 삭제
+    # 3) 서비스 디렉토리 삭제 - /var/www/html => file
+
+# 4) 패키지 삭제 - .... =>  yum | dnf
+
